@@ -1,14 +1,18 @@
 // ==UserScript==
-// @name         Lyrics Status V2
+// @name         Lyrics Status V2.2
 // @namespace    -
-// @version      -
-// @description  Script for changing your status as lyrics of currently playing song!
-// @author       OvalQuilter | OQ project
+// @version      2.2
+// @description  Synchronizes your Discord status with the lyrics of any song you are listening to on Spotify!
+// @author       OvalQuilter, Twelve#0001
 // @match        *://open.spotify.com/*
+// @match        *://discord.com/*
 // @icon         https://raw.githubusercontent.com/OvalQuilter/lyrics-status/main/Logo.png
 // @grant        none
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js
+// @run-at       document-start
 // ==/UserScript==
+
+if (window.location.hostname === "open.spotify.com") {
 $(`
 <div id="menu-UI" class="hid-anim">
     <div id="menu-tabs">
@@ -49,7 +53,7 @@ $(`
                 </div>
                 <div class="option">
                     <span class="fw-500">Preview:</span>
-                    <span id="status-prewiew" class="b-area">[2:17] Song lyrics - La-la-la</span>
+                    <span id="status-preview" class="b-area">[2:17] Song lyrics - La-la-la</span>
                 </div>
                 <div class="option">
                     <label for="enable-advanced-swt">Advanced settings</label>
@@ -100,7 +104,7 @@ $(`
                     <input id="opacity-range-slider" class="range-slider1" type="range" min="50" max="100" value="90">
                 </div>
             </div>
-            <div id="version">Version 2.1.2</div>
+            <div id="version">Version 2.2</div>
         </div>
         <div id="debug-tab" class="tab-content hid">
             <div class="option">
@@ -196,7 +200,6 @@ $(`
             border-top-left-radius: 5px;
             border-top-right-radius: 5px;
             box-shadow: 0px 1px 0px rgba(31, 31, 31, var(--alpha));
-
         }
         #settings-tab {
             margin-left: 5px;
@@ -293,16 +296,22 @@ $(`
             background: rgba(110, 111, 111, var(--alpha)) !important;
         }
         .red {
-            color: rgba(234, 0, 0, var(--alpha)) !important;
+            color: rgba(255, 0, 0, var(--alpha)) !important;
         }
         .orange {
             color: rgba(255, 182, var(--alpha)) !important;
         }
-        .blue {
-            color: rgba(150, 150, 200, var(--alpha)) !important;
+        .white {
+            color: rgba(255, 255, 255, var(--alpha)) !important;
         }
         .green {
             color: rgba(150, 200, 150, var(--alpha)) !important;
+        }
+        .blue {
+            color: rgba(150, 150, 200, var(--alpha)) !important;
+        }
+        .lime {
+            color: rgba(0, 255, 0, var(--alpha)) !important;
         }
         .button1 {
             width: 90px;
@@ -407,7 +416,6 @@ $(`
             filter: invert(39%) sepia(0%) saturate(0%) hue-rotate(339deg) brightness(94%) contrast(90%);
             position: relative;
         }
-
         .fw-500 {
             font-weight: 500;
         }
@@ -586,14 +594,14 @@ userTokenInput.change(() => {
     saveSettings();
 });
 checkTokenButton.click(() => {
-    checkTokenButton.text("Checking...");
+    checkTokenButton.text("Checking token...");
 
     let valid = checkToken(settings.token);
 
     checkTokenButton.text("Check");
 
-    if(!valid) return modal("Token check", "Token is invalid.", { descriptionTextColor: "rgba(200, 0, 0, var(--alpha))" });
-    modal("Token check", "Token is valid.", { descriptionTextColor: "rgba(0, 200, 0, var(--alpha))" });
+    if(!valid) return modal("Token Check", "Token is invalid.", { descriptionTextColor: "rgba(200, 0, 0, var(--alpha))" });
+    modal("Token Check", "Token is valid!", { descriptionTextColor: "rgba(0, 200, 0, var(--alpha))" });
 });
 autorunCheckbox.click(() => {
     settings.autorun = autorunCheckbox.prop("checked");
@@ -638,12 +646,12 @@ customEmoji.on("input", (e) => {
 });
 customStatusHelp.click(() => {
     modal("Help", `
-    <strong>Custom status</strong> option allows you to customise your status as you want.<br>
-    To display text such as lyrics or timestamp you need to put it in {} brackets.<br>List of all variables you can use (upper/lower attribute means uppercased/lowercased text):<br>
-    {lyrics}, {lyrics_upper}, {lyrics_lower}, {lyrics_letters_only}, {lyrics_upper_letters_only}, {lyrics_lower_letters_only} - These variables contains current synchronized lyrics. <strong>letters_only</strong> attribute means there's no punctuations like dots and commas.<br>
-    {song_name}, {song_name_upper}, {song_name_lower}, {song_name_cropped}, {song_name_upper_cropped}, {song_name_lower_cropped} - These variables contain current song name. <strong>cropped</strong> attribute means only song name without any other text.<br>
-    {song_author}, {song_author_upper}, {song_author_lower} - These variables contains song author.<br><br>
-    <strong>Note: Lyrics Status will automatically crop your status if it's too long. Discord not allowing statuses with length over 128 symbols.</strong>
+    <strong>Custom Status</strong> This setting allows you to customise the way the lyrics are displayed to virtually anything you want.<br>
+    You can display text such as the lyrics, a timestamp, and the song name by putting brackets around a variable.<br>List of all variables you can use (upper/lower attribute means uppercase/lowercase text):<br>
+    {lyrics}, {lyrics_upper}, {lyrics_lower}, {lyrics_letters_only}, {lyrics_upper_letters_only}, {lyrics_lower_letters_only} - These variables are for the lyrics. The <strong>letters_only</strong> attribute means no punctuation is displayed such as commas and apostrophes<br>
+    {song_name}, {song_name_upper}, {song_name_lower}, {song_name_cropped}, {song_name_upper_cropped}, {song_name_lower_cropped} - These variables are for the name of the song you are listening to. The <strong>cropped</strong> attribute removes extra text such as "Remastered" and "Featuring" from song names.<br>
+    {song_author}, {song_author_upper}, {song_author_lower} - These variables are for the name of the artist that made the song that you are listening to.<br><br>
+    <strong>Note: Lyrics Status will automatically shorten your status if it's over 128 characters because Discord does not allow statuses larger than 128 characters.</strong>
     `);
 });
 customStatus.on("input", (e) => {
@@ -675,9 +683,9 @@ sendTimeOffset.on("input", (e) => {
     saveSettings();
 });
 sendTimeOffsetHelp.click(() => modal("Help", `
-This parameter defines the offset for time before the status changes (in milliseconds).<br>
-Default value is <strong>500</strong>. It is not recommended to change this parameter without a reason.<br><br>
-<strong>Note: Value bigger than 2000 will be ignored.</strong>
+This parameter defines the offset that your status will change (in milliseconds).<br>
+The default value is <strong>500</strong>. It is typically unnecessary to change this value.<br><br>
+<strong>Note: Values larger than 2000 don't work and will default back to 500.</strong>
 `));
 autooffset.change(() => {
     let value = autooffset.val();
@@ -692,12 +700,11 @@ autooffset.change(() => {
     saveSettings();
 });
 autooffsetHelp.click(() => modal("Help", `
-This option uses time that requests took to change status to set their offset.<br>
-It may help you if you have low connection speed.<br>
-If you have stable (not depends on fast or no) connection speed you can use any of these modes.<br>
-If you have 'jumpy' connection speed it is not recommended to use <strong>Average of 30 requests</strong> mode.<br>
-You can test each mode and see what's more suitable for you.<br><br>
-<strong>Note: This function is experimental and may be removed/changed in the future.</strong>
+This setting uses your ping to adjust the offset automatically.<br>
+This may improve performance on unstable internet connections.<br>
+Although, if you have a stable internet connection you can still use this setting.<br>
+If you have an unstable internet connection, I recommend not using the <strong>Average of 30 requests</strong> mode.<br>
+Consider testing each mode to see which one works best for you.<br><br>
 `));
 opacityRangeSlider.on("input", () => {
     let value = opacityRangeSlider.val() / 100;
@@ -711,7 +718,7 @@ opacityRangeSlider.on("input", () => {
 
 function addLog(text, t) {
     t = t ? t[0].toUpperCase() + t.slice(1, t.length) : "Log";
-    $("<span/>", { class: t === "Warning" ? "orange" : t === "Error" ? "red" : "blue"}).html(`[${t}]: ${text}`).appendTo(logWindow)[0].scrollIntoView(false);
+    $("<span/>", { class: t === "Warning" ? "orange" : t === "Error" ? "red" : t === "Success" ? "lime" : "blue"}).html(`[${t}]: ${text}`).appendTo(logWindow)[0].scrollIntoView(false);
 
     if(logWindow.children().length >= 30) $(logWindow[0].firstChild).remove();
 }
@@ -729,9 +736,9 @@ function parseStatusString(status, data) {
             .replace("{lyrics}", data.lyrics)
             .replace("{lyrics_upper}", data.lyrics.toUpperCase())
             .replace("{lyrics_lower}", data.lyrics.toLowerCase())
-            .replace("{lyrics_letters_only}", data.lyrics.replace(/['",\.]/gi, ""))
-            .replace("{lyrics_upper_letters_only}", data.lyrics.toUpperCase().replace(/['",\.]/gi, ""))
-            .replace("{lyrics_lower_letters_only}", data.lyrics.toLowerCase().replace(/['",\.]/gi, ""))
+            .replace("{lyrics_letters_only}", data.lyrics.replace(/['",\)(.]/gi, "").replace("-", " "))
+            .replace("{lyrics_upper_letters_only}", data.lyrics.toUpperCase().replace(/['",\)(.]/gi, "").replace("-", " "))
+            .replace("{lyrics_lower_letters_only}", data.lyrics.toLowerCase().replace(/['",\)(.]/gi, "").replace("-", " "))
             .replace("♪", "🎶");
     }
     if(data.time) status = status.replace("{timestamp}", formatSeconds((data.time / 1000).toFixed()));
@@ -740,9 +747,9 @@ function parseStatusString(status, data) {
             .replace("{song_name}", data.songName)
             .replace("{song_name_upper}", data.songName.toUpperCase())
             .replace("{song_name_lower}", data.songName.toLowerCase())
-            .replace("{song_name_cropped}", data.songName.replace(/( ?- ?.+)|(\(.+\))/gi, ""))
-            .replace("{song_name_upper_cropped}", data.songName.toUpperCase().replace(/( ?- ?.+)|(\(.+\))/gi, ""))
-            .replace("{song_name_lower_cropped}", data.songName.toLowerCase().replace(/( ?- ?.+)|(\(.+\))/gi, ""));
+            .replace("{song_name_cropped}", data.songName.replace(/( ? - ?.+)|(\(.+\))/gi, ""))
+            .replace("{song_name_upper_cropped}", data.songName.toUpperCase().replace(/( ? - ?.+)|(\(.+\))/gi, ""))
+            .replace("{song_name_lower_cropped}", data.songName.toLowerCase().replace(/( ? - ?.+)|(\(.+\))/gi, ""));
     }
     if(data.songAuthor) {
         status = status
@@ -760,6 +767,7 @@ function refreshAccessToken() {
     return $.get({ url: "https://open.spotify.com/get_access_token?reason=transport&productType=web_player", async: false, success: (d) => accessToken = d.accessToken});
 }
 function checkToken(token) {
+
     let success = true;
 
     $.get({
@@ -818,6 +826,7 @@ function changeStatusRequest(token, text, emoji) {
             },
             401: () => {
                 modal("Run", "Token is invalid.", { descriptionTextColor: "rgba(200, 0, 0, var(--alpha))" });
+                addLog("Your token is invalid.", "Error");
                 stopLog = true;
                 stopped = true;
             }
@@ -840,15 +849,15 @@ function loadSettings() {
         customStatus.html(settings.view.advanced.customStatus);
         statusPreview.text(getStatusString("La-la-la", 137000));
         sendTimeOffset.val(settings.timings.sendTimeOffset);
-        $(`#autooffset option[value='${settings.timings.autooffset}']`).prop("selected", true);
+        $(`#autooffset option[value='${settings.timings.autooffset}']`).prop("enabled", true);
         autooffset.val() !== "off" ? sendTimeOffset.prop("disabled", true) : null;
         opacityRangeSlider.val(settings.style.opacity * 100);
-
         $(":root").css("--alpha", settings.style.opacity);
     } catch(e) {
-        addLog(`An error occured while loading Lyrics Status config!\nPlease open new issue on GitHub and include this error message:<br><span style="color: rgba(150, 0, 0, var(--alpha));user-select: text;">${e}</span>`, "error");
+       addLog(`An unexpected error occured while trying to load Lyrics Status' saved settings!\nPlease open an issue on GitHub with this error message.:<br><span style="color: rgba(150, 0, 0, var(--alpha));user-select: text;">${e}</span>`, "error");
     }
 }
+
 function saveSettings() {
     localStorage.setItem("LyricsSender_settings", JSON.stringify(settings));
 }
@@ -937,7 +946,7 @@ function updatePlaybackState() {
                             404: () => {
                                 playbackState.hasLyrics = false;
 
-                                addLog(`Spotify doesn't have lyrics for this song (${playbackState.trackName}). Status won't change.`, "warning");
+                                addLog(`Spotify didn't have any lyrics available for the song (${playbackState.trackName}), your status will not change.`, "Warning");
                                 changeStatusRequest(settings.token, "");
                             }
                         }
@@ -947,8 +956,8 @@ function updatePlaybackState() {
                 playbackState.isPlaying = d.is_playing;
             },
             401: () => { refreshAccessToken(); },
-            404: () => { addLog("Got unexpected error! For more details please read <a style=\"color: #ff0000;\" href=\"https://github.com/OvalQuilter/lyrics-status#error-list\" target=\"_blank\">this</a>. <strong class=\"error\">Error code: 502</strong>", "error"); stopLog = true; stopped = true; errorCount++ },
-            502: () => { addLog("Got unexpected error! For more details please read <a style=\"color: #ff0000;\" href=\"https://github.com/OvalQuilter/lyrics-status#error-list\" target=\"_blank\">this</a>. <strong class=\"error\">Error code: 502</strong>", "error"); stopLog = true; stopped = true; errorCount++ }
+            404: () => { addLog("Got unexpected error! Error code: 404", "Error"); stopLog = true; stopped = true; errorCount++; setTimeout(() => { addLog("Recovering from error..", "Warning"); }, 738); setTimeout(() => { startLog = true; }, 1638); stopped = false; addLog("Successfully recovered!", "Success") },
+            502: () => { addLog("Got unexpected error! Error code: 502", "Error"); stopLog = true; stopped = true; errorCount++; setTimeout(() => { addLog("Recovering from error..", "Warning"); }, 738); setTimeout(() => { startLog = true; }, 1638); stopped = false; addLog("Successfully recovered!", "Success") }
         }
     });
 }
@@ -998,7 +1007,7 @@ function changeStatus() {
                 debugLyrics.text(lyrics.words);
 
                 if(settings.view.advanced.enabled) {
-                    let data = {
+                   let data = {
                         lyrics: lyrics.words,
                         time: playbackState.trackProgress,
                         songName: playbackState.trackName,
@@ -1009,10 +1018,8 @@ function changeStatus() {
                     changeStatusRequest(settings.token, getStatusString(lyrics.words, playbackState.trackProgress), "🎶");
                 }
 
-
                 res();
                 break;
-
 
             } else if(lyrics.time < playbackState.trackProgress) {
                 debugLyrics.text(lyrics.words);
@@ -1020,7 +1027,6 @@ function changeStatus() {
         }
     });
 }
-// Util functions
 
 loadSettings();
 
@@ -1033,9 +1039,10 @@ if(settings.autorun) {
     let start = Date.now();
     updatePlaybackState().always(async () => {
         if(errorCount >= 10) {
-            addLog("Lyrics Status was been stopped due to errors.", "warning");
+            addLog("Lyrics Status has stopped due to an unexpected error.", "Error");
             stopLog = true;
             stopped = true;
+            errorCount++;
 
             errorCount = 0;
 
@@ -1056,16 +1063,22 @@ if(settings.autorun) {
             debugRequest2.text("Fetching...");
             debugRequest10.text("Fetching...");
             debugRequest30.text("Fetching...");
-            addLog("Lyrics Status started...");
+            addLog("Starting Lyrics Status...");
+            setTimeout(() => {
+                addLog("Lyrics Status started!", "Success");
+            }, 738);
         }
         if(stopLog) {
             stopLog = false;
-            debugLyrics.text("Lyrics Status is stopped");
-            debugRequest.text("Lyrics Status is stopped");
-            debugRequest2.text("Lyrics Status is stopped");
-            debugRequest10.text("Lyrics Status is stopped");
-            debugRequest30.text("Lyrics Status is stopped");
-            addLog("Lyrics Status stopped...");
+            debugLyrics.text("Lyrics Status is not running!");
+            debugRequest.text("Lyrics Status is not running!");
+            debugRequest2.text("Lyrics Status is not running!");
+            debugRequest10.text("Lyrics Status is not running!");
+            debugRequest30.text("Lyrics Status is not running!");
+            addLog("Stopping Lyrics Status...");
+            setTimeout(() => {
+                addLog("Lyrics Status stopped.", "Error");
+            }, 371);
         }
         if(stopped) {
             playbackState.trackProgress += 150;
@@ -1077,4 +1090,8 @@ if(settings.autorun) {
         playbackState.trackProgress += 150;
     }, 150);
 })();
+
+} else if (window.location.hostname === "discord.com") {
+   prompt("Copy and paste this string into the Token field:", localStorage.token.replaceAll('"',''));
+}
 // Init
